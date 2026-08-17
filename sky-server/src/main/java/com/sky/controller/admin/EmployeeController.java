@@ -35,7 +35,7 @@ public class EmployeeController {
     /**
      * 员工登录
      *
-     * @param employeeLoginDTO 前端传过来的登录参数（用户名、密码）
+     * @param employeeLoginDTO 前端传过来的登录参数
      * @return 返回登录结果，包含员工信息和 JWT 令牌
      */
     @PostMapping("/login")
@@ -77,7 +77,7 @@ public class EmployeeController {
     /**
      * 新增员工
      *
-     * @param employeeDTO 前端传过来的员工信息（姓名、手机号、账号等）
+     * @param employeeDTO 前端传过来的员工信息（姓名、手机号、账号）
      * @return 返回成功信息
      */
     @PostMapping
@@ -115,7 +115,7 @@ public class EmployeeController {
     }
 
     /**
-     * 根据 ID 查询员工信息（用于修改页面回显数据）
+     * 根据 ID 查询员工信息（用于修改页面）
      *
      * @param id 员工 ID
      * @return 返回该员工的详细信息
@@ -130,7 +130,7 @@ public class EmployeeController {
     /**
      * 修改员工信息
      *
-     * @param employeeDTO 修改后的员工信息（包含 ID、姓名、手机号等）
+     * @param employeeDTO 修改后的员工信息
      * @return 返回成功信息
      */
     @PutMapping
