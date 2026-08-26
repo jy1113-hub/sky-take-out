@@ -11,12 +11,13 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/admin/dish")
-@Slf4j
 @Api(tags = "菜品相关接口")
+@Slf4j
 public class DishController {
 
     @Autowired
@@ -41,7 +42,7 @@ public class DishController {
     @DeleteMapping
     @ApiOperation("批量删除菜品")
     public Result<String> delete(@RequestParam List<Long> ids) {
-        log.info("菜品批量删除：{}", ids);
+        log.info("批量删除菜品：{}", ids);
         dishService.deleteBatch(ids);
         return Result.success();
     }
@@ -59,6 +60,22 @@ public class DishController {
     public Result<String> update(@RequestBody DishDTO dishDTO) {
         log.info("修改菜品：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
+        return Result.success();
+    }
+
+    //根据分类id查询菜品
+    @GetMapping("/list")
+    @ApiOperation("根据分类id查询菜品")
+    public Result<List<DishVO>> list(Long categoryId) {
+        List<DishVO> list = dishService.listWithFlavor(categoryId);
+        return Result.success(list);
+    }
+
+    // 菜品起售停售
+    @PostMapping("/status/{status}")
+    @ApiOperation("菜品起售停售")
+    public Result<String> startOrStop(@PathVariable Integer status, Long id) {
+        dishService.startOrStop(status, id);
         return Result.success();
     }
 }

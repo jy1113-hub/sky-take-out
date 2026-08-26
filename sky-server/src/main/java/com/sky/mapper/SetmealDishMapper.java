@@ -1,12 +1,23 @@
-// SetmealDishMapper.java
+
 package com.sky.mapper;
-import com.sky.entity.SetmealDish;
-import org.apache.ibatis.annotations.*;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 @Mapper
 public interface SetmealDishMapper {
-    void insertBatch(List<SetmealDish> setmealDishes);
-    void deleteBySetmealId(Long setmealId);
-    void deleteBySetmealIds(List<Long> setmealIds);
+
+    /**
+     * 根据菜品ID列表，查询关联的套餐ID列表
+     * @param dishIds 菜品ID列表
+     * @return 套餐ID列表
+     */
+    @Select("<script>" +
+            "select setmeal_id from setmeal_dish where dish_id in " +
+            "<foreach collection='list' item='id' open='(' separator=',' close=')'>" +
+            "#{id}" +
+            "</foreach>" +
+            "</script>")
+    List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
 }
