@@ -37,6 +37,13 @@ sky:
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+    # user 的 jwt 配置
+    #签名密钥
+    user-secret-key: seiryo
+    #令牌有效期
+    user-ttl: 7200000
+    # 前端请求头里的令牌名称
+    user-token-name: authentication
   alioss:
     endpoint: ${sky.alioss.endpoint}
     access-key-id: ${sky.alioss.access-key-id}
@@ -48,3 +55,7 @@ sky:
     port: 6379
     password: 123456
     database: 0
+  # 微信小程序配置
+  wechat:
+    appid: wx7k9m2p5q8r3t6w1z4y7
+    secret: k9m2p5q8r3t6w1z4y7k9m2p5q8r3t6w1z
