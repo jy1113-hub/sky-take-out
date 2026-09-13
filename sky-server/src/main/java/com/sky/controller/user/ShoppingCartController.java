@@ -9,12 +9,13 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@RestController("userShoppingCartController")
+@RestController
 @RequestMapping("/user/shoppingCart")
-@Slf4j
 @Api(tags = "C端-购物车接口")
+@Slf4j
 public class ShoppingCartController {
 
     @Autowired
@@ -23,7 +24,6 @@ public class ShoppingCartController {
     @PostMapping("/add")
     @ApiOperation("添加购物车")
     public Result<String> add(@RequestBody ShoppingCartDTO shoppingCartDTO) {
-        log.info("添加购物车：{}", shoppingCartDTO);
         shoppingCartService.addShoppingCart(shoppingCartDTO);
         return Result.success();
     }
@@ -38,6 +38,13 @@ public class ShoppingCartController {
     @ApiOperation("清空购物车")
     public Result<String> clean() {
         shoppingCartService.cleanShoppingCart();
+        return Result.success();
+    }
+
+    @PostMapping("/sub")
+    @ApiOperation("删除购物车中一个商品")
+    public Result<String> sub(@RequestBody ShoppingCartDTO shoppingCartDTO) {
+        shoppingCartService.subShoppingCart(shoppingCartDTO);
         return Result.success();
     }
 }

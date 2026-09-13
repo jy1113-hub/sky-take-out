@@ -20,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 菜品服务层实现类
+ */
 @Service
 public class DishServiceImpl implements DishService {
 
@@ -35,15 +37,16 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 新增菜品和对应的口味
+     * 关键点：先插入菜品拿到自动生成id，再给口味设置这个id并批量插入
      */
     @Override
     @Transactional
     public void saveWithFlavor(DishDTO dishDTO) {
         Dish dish = new Dish();
         BeanUtils.copyProperties(dishDTO, dish);
-        // 1. 向菜品表插入1条数据 ,数据回显，自动生成id
+        // 1. 向菜品表插入1条数据（数据回显，自动生成id）
         dishMapper.insert(dish);
-        // 2. 获取插入后生成的菜品id
+        // 2. 拿到自动生成的菜品id
         Long dishId = dish.getId();
         // 3. 向口味表插入n条数据
         List<DishFlavor> flavors = dishDTO.getFlavors();
@@ -64,7 +67,7 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
-     * 批量删除菜品,要判断起售和套餐关联
+     * 批量删除菜品（需要判断起售和套餐关联）
      */
     @Override
     @Transactional
@@ -103,6 +106,7 @@ public class DishServiceImpl implements DishService {
 
     /**
      * 修改菜品和口味
+     * 思路：先修改菜品表，再删除旧口味，最后插入新口味
      */
     @Override
     @Transactional
@@ -122,33 +126,27 @@ public class DishServiceImpl implements DishService {
     }
 
     /**
-     * 根据分类ID查询起售中的菜品列表（带口味数据）
-     * 用于用户端小程序展示菜品时，同时展示菜品的基本信息和可选口味
-     *
-     * @param categoryId 分类ID
-     * @return 菜品视图对象列表，每个DishVO中包含菜品信息和对应的口味列表
+     * 用户端：根据 Dish（含分类id和状态）查询起售中的菜品
+     */
+    @Override
+    public List<DishVO> listWithFlavor(Dish dish) {
+        return dishMapper.listWithFlavor(dish);
+    }
+
+    /**
+     * 管理端：根据分类id查询菜品（不过滤状态）
      */
     @Override
     public List<DishVO> listWithFlavor(Long categoryId) {
-        // 直接调用 Mapper 层方法，Mapper 已在 XML 中写好 SQL：
-        // SELECT d.*, f.* FROM dish d LEFT JOIN dish_flavor f ON d.id = f.dish_id
-        // WHERE d.category_id = #{categoryId} AND d.status = 1
-        // 并自动把一对多的数据（一个菜品对应多个口味）组装到 DishVO 的 flavors 字段中
-        return dishMapper.listWithFlavor(categoryId);
+        return dishMapper.listWithFlavorByCategoryId(categoryId);
     }
+
     /**
-     * 起售/停售菜品（启用/禁用菜品）
-     * 修改 dish 表中的 status 字段：1=起售（启用），0=停售（禁用）
-     *
-     * @param status 目标状态：1=起售（启用），0=停售（禁用）
-     * @param id     菜品ID，用来找到要修改的菜品
+     * 起售/停售菜品
      */
     @Override
     public void startOrStop(Integer status, Long id) {
-        Dish dish = Dish.builder()
-                .id(id)
-                .status(status)
-                .build();
+        Dish dish = Dish.builder().id(id).status(status).build();
         dishMapper.update(dish);
     }
 }

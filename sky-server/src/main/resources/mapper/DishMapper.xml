@@ -3,11 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.DishMapper">
 
-    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into dish (name, category_id, price, image, description, status, create_time, update_time, create_user, update_user)
-        values (#{name}, #{categoryId}, #{price}, #{image}, #{description}, #{status}, #{createTime}, #{updateTime}, #{createUser}, #{updateUser})
-    </insert>
-
+    <!-- 菜品分页查询（多表连接分类表，带分类名称） -->
     <select id="pageQuery" resultType="com.sky.vo.DishVO">
         select d.*, c.name as categoryName
         from dish d
@@ -26,10 +22,7 @@
         order by d.create_time desc
     </select>
 
-    <select id="getById" resultType="com.sky.entity.Dish">
-        select * from dish where id = #{id}
-    </select>
-
+    <!-- 动态更新菜品 -->
     <update id="update">
         update dish
         <set>
@@ -45,13 +38,31 @@
         where id = #{id}
     </update>
 
+    <!-- 批量删除菜品 -->
     <delete id="deleteByIds">
         delete from dish where id in
-        <foreach collection="list" item="id" open="(" separator="," close=")">#{id}</foreach>
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </delete>
 
+    <!-- 用户端：根据分类id和状态查询起售中的菜品（带分类名称） -->
     <select id="listWithFlavor" resultType="com.sky.vo.DishVO">
-        select * from dish where category_id = #{categoryId} and status = 1
+        select d.*, c.name as categoryName
+        from dish d
+        left join category c on d.category_id = c.id
+        where d.category_id = #{categoryId}
+        and d.status = #{status}
+        order by d.create_time desc
+    </select>
+
+    <!-- 管理端：根据分类id查询菜品（不过滤状态） -->
+    <select id="listWithFlavorByCategoryId" resultType="com.sky.vo.DishVO">
+        select d.*, c.name as categoryName
+        from dish d
+        left join category c on d.category_id = c.id
+        where d.category_id = #{categoryId}
+        order by d.create_time desc
     </select>
 
 </mapper>
