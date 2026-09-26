@@ -2,19 +2,18 @@ package com.sky.mapper;
 
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Insert;
-import java.time.LocalDateTime;
-import java.util.List;
+import org.apache.ibatis.annotations.Select;
 
 @Mapper
 public interface OrderMapper {
-    @Insert("insert into orders (number, status, user_id, address_book_id, order_time, amount, pay_method, remark, phone, address, consignee) " +
-            "values (#{number}, #{status}, #{userId}, #{addressBookId}, #{orderTime}, #{amount}, #{payMethod}, #{remark}, #{phone}, #{address}, #{consignee})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
+
+    /** 插入订单 */
     void insert(Orders orders);
 
-    List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime orderTime);
+    /** 根据订单号查询订单 */
+    @Select("select * from orders where number = #{orderNumber}")
+    Orders getByNumber(String orderNumber);
 
+    /** 更新订单信息 */
     void update(Orders orders);
 }

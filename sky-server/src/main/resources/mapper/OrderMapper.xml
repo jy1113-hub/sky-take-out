@@ -3,27 +3,29 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.sky.mapper.OrderMapper">
 
-    <!-- 插入订单（你在 OrderMapper 里用的注解，这里存一份冗余） -->
+    <!-- 插入订单 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        insert into orders (number, status, user_id, address_book_id, order_time, amount, pay_method, remark, phone, address, consignee)
-        values (#{number}, #{status}, #{userId}, #{addressBookId}, #{orderTime}, #{amount}, #{payMethod}, #{remark}, #{phone}, #{address}, #{consignee})
+        insert into orders
+        (number, status, user_id, address_book_id, order_time, checkout_time, pay_method, pay_status, amount, remark,
+        phone, address, consignee, cancel_reason, rejection_reason, cancel_time, estimated_delivery_time,
+        delivery_status, delivery_time, pack_amount, tableware_number, tableware_status)
+        values
+        (#{number}, #{status}, #{userId}, #{addressBookId}, #{orderTime}, #{checkoutTime}, #{payMethod}, #{payStatus}, #{amount}, #{remark},
+        #{phone}, #{address}, #{consignee}, #{cancelReason}, #{rejectionReason}, #{cancelTime}, #{estimatedDeliveryTime},
+        #{deliveryStatus}, #{deliveryTime}, #{packAmount}, #{tablewareNumber}, #{tablewareStatus})
     </insert>
 
-    <!-- 查询超时订单 -->
-    <select id="getByStatusAndOrderTimeLT" resultType="com.sky.entity.Orders">
-        select * from orders where status = #{status} and order_time &lt; #{orderTime}
-    </select>
-
-    <!-- 更新订单 -->
+    <!-- 动态更新订单 -->
     <update id="update">
         update orders
         <set>
             <if test="status != null">status = #{status},</if>
-            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
-            <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
             <if test="payStatus != null">pay_status = #{payStatus},</if>
-            <if test="rejectionReason != null">rejection_reason = #{rejectionReason},</if>
             <if test="checkoutTime != null">checkout_time = #{checkoutTime},</if>
+            <if test="payMethod != null">pay_method = #{payMethod},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="rejectionReason != null">rejection_reason = #{rejectionReason},</if>
+            <if test="cancelTime != null">cancel_time = #{cancelTime},</if>
             <if test="deliveryTime != null">delivery_time = #{deliveryTime},</if>
         </set>
         where id = #{id}
