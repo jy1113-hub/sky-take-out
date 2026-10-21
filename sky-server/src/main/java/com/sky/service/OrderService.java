@@ -12,4 +12,7 @@ public interface OrderService {
 
     /** 订单支付 */
     OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO);
+
+    /**催单 */
+    void reminder(Long id);
 }

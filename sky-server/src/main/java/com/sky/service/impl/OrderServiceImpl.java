@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersPaymentDTO;
@@ -18,6 +19,7 @@ import com.sky.mapper.ShoppingCartMapper;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.websocket.WebSocketServer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 订单服务层实现类
@@ -41,17 +45,10 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private AddressBookMapper addressBookMapper;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
-    /**
-     * 用户下单
-     * 逻辑：
-     * 1. 校验地址
-     * 2. 校验购物车
-     * 3. 插入订单
-     * 4. 批量插入订单明细
-     * 5. 清空购物车
-     * 6. 返回订单信息
-     */
+    /** 用户下单 */
     @Override
     @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
@@ -106,13 +103,7 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    /**
-     * 订单支付（模拟支付）
-     * 逻辑：
-     * 1. 根据订单号查询订单
-     * 2. 更新订单状态：待接单 + 已支付
-     * 3. 返回模拟支付结果
-     */
+    /** 订单支付（模拟支付） */
     @Override
     @Transactional
     public OrderPaymentVO payment(OrdersPaymentDTO ordersPaymentDTO) {
@@ -131,7 +122,14 @@ public class OrderServiceImpl implements OrderService {
         orders.setPayMethod(ordersPaymentDTO.getPayMethod());
         orderMapper.update(orders);
 
-        // 3. 返回模拟支付结果
+        // 3. 推送来单提醒
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 1);
+        map.put("orderId", ordersDB.getId());
+        map.put("content", "订单号：" + ordersDB.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+
+        // 4. 返回模拟支付结果
         return OrderPaymentVO.builder()
                 .nonceStr("mock_nonce")
                 .paySign("mock_sign")
@@ -139,5 +137,22 @@ public class OrderServiceImpl implements OrderService {
                 .signType("RSA")
                 .packageStr("prepay_id=mock")
                 .build();
+    }
+
+    /** 客户催单 */
+    @Override
+    public void reminder(Long id) {
+        // 1. 查询订单
+        Orders ordersDB = orderMapper.getById(id);
+        if (ordersDB == null) {
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        // 2. 推送催单消息
+        Map<String, Object> map = new HashMap<>();
+        map.put("type", 2);
+        map.put("orderId", id);
+        map.put("content", "订单号：" + ordersDB.getNumber());
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 }

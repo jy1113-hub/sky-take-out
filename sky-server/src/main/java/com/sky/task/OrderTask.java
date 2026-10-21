@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 订单状态定时处理
+ */
 @Component
 @Slf4j
 public class OrderTask {
@@ -18,40 +21,36 @@ public class OrderTask {
     private OrderMapper orderMapper;
 
     /**
-     * 处理支付超时订单：下单后超过15分钟未支付，自动取消
+     * 处理支付超时订单：每分钟执行一次
      */
-    @Scheduled(cron = "0 * * * * ?") // 每分钟执行一次
+    @Scheduled(cron = "0 * * * * ?")
     public void processTimeoutOrder() {
-        log.info("定时任务：开始处理支付超时订单...");
+        log.info("处理支付超时订单：{}", LocalDateTime.now());
         LocalDateTime time = LocalDateTime.now().minusMinutes(15);
         List<Orders> ordersList = orderMapper.getByStatusAndOrderTimeLT(Orders.PENDING_PAYMENT, time);
-
         if (ordersList != null && !ordersList.isEmpty()) {
-            for (Orders order : ordersList) {
-                order.setStatus(Orders.CANCELLED);
-                order.setCancelReason("支付超时，自动取消");
-                order.setCancelTime(LocalDateTime.now());
-                orderMapper.update(order);
+            for (Orders orders : ordersList) {
+                orders.setStatus(Orders.CANCELLED);
+                orders.setCancelReason("支付超时，自动取消");
+                orders.setCancelTime(LocalDateTime.now());
+                orderMapper.update(orders);
             }
-            log.info("成功取消 {} 笔超时订单", ordersList.size());
         }
     }
 
     /**
-     * 处理派送中订单：一直处于派送中状态超过1小时，自动完成
+     * 处理派送中订单：每天凌晨1点执行
      */
-    @Scheduled(cron = "0 0 1 * * ?") // 每天凌晨1点执行
+    @Scheduled(cron = "0 0 1 * * ?")
     public void processDeliveryOrder() {
-        log.info("定时任务：开始处理派送中订单...");
+        log.info("处理派送中订单：{}", LocalDateTime.now());
         LocalDateTime time = LocalDateTime.now().minusMinutes(60);
         List<Orders> ordersList = orderMapper.getByStatusAndOrderTimeLT(Orders.DELIVERY_IN_PROGRESS, time);
-
         if (ordersList != null && !ordersList.isEmpty()) {
-            for (Orders order : ordersList) {
-                order.setStatus(Orders.COMPLETED);
-                orderMapper.update(order);
+            for (Orders orders : ordersList) {
+                orders.setStatus(Orders.COMPLETED);
+                orderMapper.update(orders);
             }
-            log.info("成功完成 {} 笔派送超时订单", ordersList.size());
         }
     }
 }

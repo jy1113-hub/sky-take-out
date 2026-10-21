@@ -47,4 +47,8 @@ public interface SetmealDishMapper {
             "</foreach>" +
             "</script>")
     List<Long> getSetmealIdsByDishIds(List<Long> dishIds);
+
+    /** 根据状态统计套餐数量 */
+    @Select("select count(id) from setmeal where status = #{status}")
+    Integer countByStatus(Integer status);
 }

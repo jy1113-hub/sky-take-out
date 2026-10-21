@@ -53,4 +53,8 @@ public interface DishMapper {
      * 管理端：根据分类id查询菜品（不过滤状态）
      */
     List<DishVO> listWithFlavorByCategoryId(Long categoryId);
+
+    /** 根据状态统计菜品数量 */
+    @Select("select count(id) from dish where status = #{status}")
+    Integer countByStatus(Integer status);
 }
